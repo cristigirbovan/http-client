@@ -1,6 +1,6 @@
 # HTTP Client
 
-The `http-client` project is a versatile HTTP client abstraction that simplifies making HTTP requests using different clients like `RestTemplate`, `WebClient`, and `OpenFeignClient`. It supports various features such as asynchronous calls, rate limiting, and timeout management.
+The `http-client` project is a HTTP client abstraction that simplifies making HTTP requests using different clients like `RestTemplate`, `WebClient`, and `OpenFeignClient`. It supports various features such as asynchronous calls, rate limiting, and timeout management.
 
 ## Features
 
