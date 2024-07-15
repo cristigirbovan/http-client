@@ -72,15 +72,17 @@ You can make parallel API calls using the `callApisInParallel` method from `Exte
 @Autowired
 private ExternalApiService externalApiService;
 
-public void makeParallelApiCalls() {
-    List<ApiCallConfig> configs = List.of(
-        new ApiCallConfig("https://api.example.com/data1", "WebClient", HttpMethod.GET, false, 5000, 10, null, MyResponse.class),
-        new ApiCallConfig("https://api.example.com/data2", "OpenFeign", HttpMethod.POST, false, 5000, 10, new RequestBody(), MyResponse.class),
-        new ApiCallConfig("https://api.example.com/data3", "OpenFeign", HttpMethod.POST, false, 5000, 10, new RequestBody(), MyResponse.class),
-        new ApiCallConfig("https://api.example.com/data4", "RestTemplate", HttpMethod.POST, false, 5000, 10, new RequestBody(), MyResponse.class)
-    );
-
-    List<Object> responses = externalApiService.callApisInParallel(configs);
-    responses.forEach(response -> System.out.println("Response: " + response));
+@GetMapping("/makeParallelApiCalls")
+public List<Object> makeParallelApiCalls() {
+    List<ApiCallConfig> configs = Arrays.asList(
+                new ApiCallConfig("https://jsonplaceholder.typicode.com/posts/1", "RestTemplate", HttpMethod.GET, false, 5000, 10, null, Object.class)
+                ,new ApiCallConfig("https://jsonplaceholder.typicode.com/posts/2", "OpenFeign", HttpMethod.GET, true, 5000, 10, null, Object.class)
+                ,new ApiCallConfig("https://jsonplaceholder.typicode.com/posts/3", "WebClient", HttpMethod.GET, false, 5000, 10, null, Object.class)
+                ,new ApiCallConfig("https://jsonplaceholder.typicode.com/posts/4", "OpenFeign", HttpMethod.GET, false, 5000, 10, null, Object.class)
+                ,new ApiCallConfig("https://jsonplaceholder.typicode.com/posts/5", "OpenFeign", HttpMethod.GET, false, 5000, 10, null, Object.class)
+                ,new ApiCallConfig("https://jsonplaceholder.typicode.com/posts/6", "WebClient", HttpMethod.GET, true, 5000, 10, null, Object.class)
+                ,new ApiCallConfig("https://jsonplaceholder.typicode.com/posts/7", "RestTemplate", HttpMethod.GET, false, 5000, 10, null, Object.class)
+        );
+    return externalApiService.callApisInParallel(configs);
 }
 ```
