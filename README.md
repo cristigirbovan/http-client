@@ -49,23 +49,41 @@ You can make a single API request using the `makeRequest` method from `ExternalA
 @Autowired
 private ExternalApiService externalApiService;
 
-public void makeApiCall() {
-    String url = "https://api.example.com/data";
-    String client = "WebClient";
-    String method = "GET";
-    boolean async = false;
-    int timeout = 5000;
-    int rateLimit = 10;
-    Object body = null;
-    Class<MyResponse> responseType = MyResponse.class;
-
-    try {
-        MyResponse response = externalApiService.makeRequest(url, client, method, async, timeout, rateLimit, body, responseType);
-    } catch (Throwable throwable) {
-        throwable.printStackTrace();
-    }
+@GetMapping("/getPostRT")
+public Object getPostRT(@RequestParam String postId) throws Throwable {
+	String url = "https://jsonplaceholder.typicode.com/posts/" + postId;
+    return externalApiService.makeRequest(url, "RestTemplate", "GET", true, 5000, 5, null, Object.class);
 }
 
+@GetMapping("/getPostWC")
+public Object getPostWC(@RequestParam String postId) throws Throwable {
+	String url = "https://jsonplaceholder.typicode.com/posts/" + postId;
+	return externalApiService.makeRequest(url, "WebClient", "GET", false, 5000, 5, null, Object.class);
+}
+
+@GetMapping("/getPostOF")
+public Object getPostOF(@RequestParam String postId) throws Throwable {
+	String url = "https://jsonplaceholder.typicode.com/posts/" + postId;
+	return externalApiService.makeRequest(url, "OpenFeign", "GET", false, 5000, 5, null, Object.class);
+}
+
+@PostMapping("/createPostRT")
+public Object createPostRT(@RequestBody Map<String, Object> requestBody) throws Throwable {
+	String url = "https://jsonplaceholder.typicode.com/posts";
+	return externalApiService.makeRequest(url, "RestTemplate", "POST", false, 5000, 5, requestBody, Object.class);
+}
+
+@PostMapping("/createPostWC")
+public Object createPostWC(@RequestBody Map<String, Object> requestBody) throws Throwable {
+	String url = "https://jsonplaceholder.typicode.com/posts";
+	return externalApiService.makeRequest(url, "WebClient", "POST", true, 5000, 5, requestBody, Object.class);
+}
+
+@PostMapping("/createPostOF")
+public Object createPostOF(@RequestBody Map<String, Object> requestBody) throws Throwable {
+	String url = "https://jsonplaceholder.typicode.com/posts";
+	return externalApiService.makeRequest(url, "OpenFeign", "POST", true, 5000, 5, requestBody, Object.class);
+}
 ```
 You can make parallel API calls using the `callApisInParallel` method from `ExternalApiService`.
 ```java
