@@ -13,7 +13,7 @@ interface CodeGeneratorModalProps {
 }
 
 export default function CodeGeneratorModal({ isOpen, onClose }: CodeGeneratorModalProps) {
-  const [language, setLanguage] = useState('curl')
+  const [language, setLanguage] = useState('java-resttemplate')
   const [copied, setCopied] = useState(false)
   const currentRequest = useRequestStore((state) => state.currentRequest)
   const getVariables = useEnvironmentStore((state) => state.getVariables)
@@ -26,6 +26,16 @@ export default function CodeGeneratorModal({ isOpen, onClose }: CodeGeneratorMod
     switch (language) {
       case 'curl':
         return CodeGenerator.generateCurl(currentRequest, env)
+      case 'java-resttemplate':
+        return CodeGenerator.generateRestTemplate(currentRequest, env)
+      case 'java-webclient':
+        return CodeGenerator.generateWebClient(currentRequest, env)
+      case 'java-feign':
+        return CodeGenerator.generateFeignClient(currentRequest, env)
+      case 'java-okhttp':
+        return CodeGenerator.generateOkHttp(currentRequest, env)
+      case 'java-junit':
+        return CodeGenerator.generateJUnit(currentRequest, env)
       case 'python':
         return CodeGenerator.generatePython(currentRequest, env)
       case 'javascript':
@@ -49,6 +59,12 @@ export default function CodeGeneratorModal({ isOpen, onClose }: CodeGeneratorMod
 
   const getEditorLanguage = () => {
     switch (language) {
+      case 'java-resttemplate':
+      case 'java-webclient':
+      case 'java-feign':
+      case 'java-okhttp':
+      case 'java-junit':
+        return 'java'
       case 'python':
         return 'python'
       case 'javascript':
@@ -79,13 +95,22 @@ export default function CodeGeneratorModal({ isOpen, onClose }: CodeGeneratorMod
           <Select
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className="w-48"
+            className="w-64"
           >
-            <option value="curl">cURL</option>
-            <option value="python">Python (requests)</option>
-            <option value="javascript">JavaScript (Fetch)</option>
-            <option value="node-axios">Node.js (Axios)</option>
-            <option value="go">Go</option>
+            <optgroup label="☕ Java / Spring Boot">
+              <option value="java-resttemplate">Java - RestTemplate</option>
+              <option value="java-webclient">Java - WebClient (Reactive)</option>
+              <option value="java-feign">Java - Feign Client</option>
+              <option value="java-okhttp">Java - OkHttp</option>
+              <option value="java-junit">Java - JUnit Test</option>
+            </optgroup>
+            <optgroup label="🌐 Other Languages">
+              <option value="curl">cURL</option>
+              <option value="python">Python (requests)</option>
+              <option value="javascript">JavaScript (Fetch)</option>
+              <option value="node-axios">Node.js (Axios)</option>
+              <option value="go">Go</option>
+            </optgroup>
           </Select>
           <Button onClick={handleCopy} variant="outline" size="sm" className="ml-auto">
             {copied ? (

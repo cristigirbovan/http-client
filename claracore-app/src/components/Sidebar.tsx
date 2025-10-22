@@ -37,8 +37,8 @@ export default function Sidebar() {
     <div className="h-full bg-card border-r border-border flex flex-col">
       {/* Header */}
       <div className="p-4 border-b border-border">
-        <h1 className="text-xl font-bold text-primary">ClaraCore</h1>
-        <p className="text-xs text-muted-foreground mt-1">HTTP Client v1.0.0</p>
+        <h1 className="text-xl font-bold text-primary">☕ ClaraCore</h1>
+        <p className="text-xs text-muted-foreground mt-1">HTTP Client for Java Developers</p>
       </div>
 
       {/* Search */}

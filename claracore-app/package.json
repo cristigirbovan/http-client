@@ -2,7 +2,7 @@
   "name": "claracore",
   "productName": "ClaraCore",
   "version": "1.0.0",
-  "description": "Production-grade HTTP client with advanced features",
+  "description": "HTTP Client for Java & Spring Boot Developers",
   "main": "dist-electron/main.js",
   "author": "ClaraCore Team",
   "license": "MIT",
