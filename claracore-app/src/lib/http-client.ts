@@ -98,7 +98,7 @@ export class HttpClient {
         }
       }
 
-      // Configure axios request
+      // Configure axios request with per-request settings
       const config: AxiosRequestConfig = {
         method: request.method,
         url,
@@ -106,8 +106,21 @@ export class HttpClient {
         params,
         data,
         validateStatus: () => true, // Accept all status codes
-        maxRedirects: 5,
-        timeout: 30000,
+        maxRedirects: request.settings?.maxRedirects ?? 5,
+        timeout: request.settings?.timeout ?? 30000,
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+      }
+
+      // Apply request-specific settings
+      if (request.settings) {
+        if (request.settings.followRedirects === false) {
+          config.maxRedirects = 0
+        }
+        if (request.settings.validateSSL === false) {
+          // Note: In browser/Electron, this requires additional configuration
+          config.httpsAgent = undefined
+        }
       }
 
       const axiosResponse: AxiosResponse = await axios(config)

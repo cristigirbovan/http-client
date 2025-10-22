@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { replaceDynamicVariables } from './dynamic-variables'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -39,9 +40,15 @@ export function stringifyJSON(obj: any, pretty = true): string {
 }
 
 export function replaceVariables(text: string, variables: Record<string, string>): string {
-  return text.replace(/\{\{(\w+)\}\}/g, (_, key) => {
+  // First replace dynamic variables (those starting with $)
+  let result = replaceDynamicVariables(text)
+
+  // Then replace user-defined variables
+  result = result.replace(/\{\{(\w+)\}\}/g, (_, key) => {
     return variables[key] || `{{${key}}}`
   })
+
+  return result
 }
 
 export function getStatusColor(status: number): string {
