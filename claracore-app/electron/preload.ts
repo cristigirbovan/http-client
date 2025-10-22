@@ -5,6 +5,8 @@ import { contextBridge, ipcRenderer } from 'electron'
 contextBridge.exposeInMainWorld('electronAPI', {
   getVersion: () => ipcRenderer.invoke('app:getVersion'),
   getPlatform: () => ipcRenderer.invoke('app:getPlatform'),
+  javaIsRunning: () => ipcRenderer.invoke('java:isRunning'),
+  javaGetUrl: () => ipcRenderer.invoke('java:getUrl'),
 })
 
 // TypeScript declaration for the exposed API
@@ -13,6 +15,8 @@ declare global {
     electronAPI: {
       getVersion: () => Promise<string>
       getPlatform: () => Promise<string>
+      javaIsRunning: () => Promise<boolean>
+      javaGetUrl: () => Promise<string>
     }
   }
 }

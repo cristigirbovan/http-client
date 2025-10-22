@@ -45,6 +45,8 @@ export interface Request {
     formData?: KeyValue[]
   }
   auth: AuthConfig
+  preRequestScript?: string
+  testScript?: string
   createdAt: number
   updatedAt: number
 }
@@ -56,6 +58,22 @@ export interface Response {
   data: any
   time: number
   size: number
+  preRequestScriptResult?: ScriptExecutionResult
+  testScriptResult?: ScriptExecutionResult
+}
+
+export interface ScriptExecutionResult {
+  success: boolean
+  error?: string
+  consoleOutput: string[]
+  testResults?: TestResult[]
+  executionTime: number
+}
+
+export interface TestResult {
+  name: string
+  passed: boolean
+  message: string
 }
 
 export interface Collection {

@@ -19,6 +19,8 @@ interface RequestState {
   removeParam: (id: string) => void
   setBody: (type: BodyType, content: string) => void
   setAuth: (auth: AuthConfig) => void
+  setPreRequestScript: (script: string) => void
+  setTestScript: (script: string) => void
   setResponse: (response: Response | null) => void
   setLoading: (loading: boolean) => void
   resetRequest: () => void
@@ -155,6 +157,24 @@ export const useRequestStore = create<RequestState>()(
           currentRequest: {
             ...state.currentRequest,
             auth,
+            updatedAt: Date.now(),
+          },
+        })),
+
+      setPreRequestScript: (script) =>
+        set((state) => ({
+          currentRequest: {
+            ...state.currentRequest,
+            preRequestScript: script,
+            updatedAt: Date.now(),
+          },
+        })),
+
+      setTestScript: (script) =>
+        set((state) => ({
+          currentRequest: {
+            ...state.currentRequest,
+            testScript: script,
             updatedAt: Date.now(),
           },
         })),

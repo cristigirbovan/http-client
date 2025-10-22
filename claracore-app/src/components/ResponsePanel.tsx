@@ -3,13 +3,16 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs'
 import { useRequestStore } from '../store/request-store'
 import { formatBytes, formatTime, getStatusColor, stringifyJSON } from '../lib/utils'
 import Editor from '@monaco-editor/react'
-import { Copy, Check } from 'lucide-react'
+import { Copy, Check, CheckCircle2, XCircle, AlertCircle } from 'lucide-react'
 import { Button } from './ui/button'
 
 export default function ResponsePanel() {
   const currentResponse = useRequestStore((state) => state.currentResponse)
   const [activeTab, setActiveTab] = useState('body')
   const [copied, setCopied] = useState(false)
+
+  const hasScriptResults = currentResponse?.preRequestScriptResult || currentResponse?.testScriptResult
+  const hasTests = currentResponse?.testScriptResult?.testResults && currentResponse.testScriptResult.testResults.length > 0
 
   const handleCopy = () => {
     if (currentResponse?.data) {
@@ -99,6 +102,8 @@ export default function ResponsePanel() {
           <TabsList>
             <TabsTrigger value="body">Body</TabsTrigger>
             <TabsTrigger value="headers">Headers</TabsTrigger>
+            {hasScriptResults && <TabsTrigger value="console">Console</TabsTrigger>}
+            {hasTests && <TabsTrigger value="tests">Tests</TabsTrigger>}
           </TabsList>
         </div>
 
@@ -134,6 +139,115 @@ export default function ResponsePanel() {
               ))}
             </div>
           </TabsContent>
+
+          {/* Console Tab */}
+          {hasScriptResults && (
+            <TabsContent value="console" className="h-full overflow-y-auto p-4">
+              <div className="space-y-4">
+                {/* Pre-request Script Console */}
+                {currentResponse.preRequestScriptResult && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 pb-2 border-b border-border">
+                      <h3 className="font-semibold">Pre-request Script</h3>
+                      {currentResponse.preRequestScriptResult.success ? (
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-red-500" />
+                      )}
+                      <span className="text-xs text-muted-foreground ml-auto">
+                        {currentResponse.preRequestScriptResult.executionTime}ms
+                      </span>
+                    </div>
+
+                    {currentResponse.preRequestScriptResult.error && (
+                      <div className="bg-red-500/10 border border-red-500/20 rounded p-3 text-sm text-red-500">
+                        {currentResponse.preRequestScriptResult.error}
+                      </div>
+                    )}
+
+                    {currentResponse.preRequestScriptResult.consoleOutput?.map((line, i) => (
+                      <div key={i} className="font-mono text-sm p-2 bg-muted/50 rounded">
+                        {line}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Test Script Console */}
+                {currentResponse.testScriptResult && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 pb-2 border-b border-border">
+                      <h3 className="font-semibold">Test Script</h3>
+                      {currentResponse.testScriptResult.success ? (
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-red-500" />
+                      )}
+                      <span className="text-xs text-muted-foreground ml-auto">
+                        {currentResponse.testScriptResult.executionTime}ms
+                      </span>
+                    </div>
+
+                    {currentResponse.testScriptResult.error && (
+                      <div className="bg-red-500/10 border border-red-500/20 rounded p-3 text-sm text-red-500">
+                        {currentResponse.testScriptResult.error}
+                      </div>
+                    )}
+
+                    {currentResponse.testScriptResult.consoleOutput?.map((line, i) => (
+                      <div key={i} className="font-mono text-sm p-2 bg-muted/50 rounded">
+                        {line}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          )}
+
+          {/* Tests Tab */}
+          {hasTests && (
+            <TabsContent value="tests" className="h-full overflow-y-auto p-4">
+              <div className="space-y-3">
+                <div className="flex items-center gap-4 pb-3 border-b border-border">
+                  <h3 className="font-semibold">Test Results</h3>
+                  <div className="flex items-center gap-4 text-sm">
+                    <span className="text-green-500">
+                      {currentResponse.testScriptResult!.testResults!.filter(t => t.passed).length} passed
+                    </span>
+                    <span className="text-red-500">
+                      {currentResponse.testScriptResult!.testResults!.filter(t => !t.passed).length} failed
+                    </span>
+                  </div>
+                </div>
+
+                {currentResponse.testScriptResult!.testResults!.map((test, i) => (
+                  <div
+                    key={i}
+                    className={`p-3 rounded border ${
+                      test.passed
+                        ? 'bg-green-500/10 border-green-500/20'
+                        : 'bg-red-500/10 border-red-500/20'
+                    }`}
+                  >
+                    <div className="flex items-start gap-2">
+                      {test.passed ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      ) : (
+                        <XCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                      )}
+                      <div className="flex-1">
+                        <div className="font-semibold text-sm">{test.name}</div>
+                        <div className={`text-sm mt-1 ${test.passed ? 'text-green-600' : 'text-red-600'}`}>
+                          {test.message}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+          )}
         </div>
       </Tabs>
     </div>
