@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { useRequestStore } from '../store/request-store'
 import { Button } from './ui/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs'
-import { Play, AlertCircle, CheckCircle2, Info } from 'lucide-react'
+import { Play, AlertCircle, CheckCircle2, Info, AlertTriangle } from 'lucide-react'
 import Editor from '@monaco-editor/react'
+import { JavaScriptService } from '../lib/java-script-service'
 
 export default function ScriptsTab() {
   const currentRequest = useRequestStore((state) => state.currentRequest)
@@ -13,12 +14,27 @@ export default function ScriptsTab() {
   const [activeTab, setActiveTab] = useState('pre-request')
   const [preRequestCode, setPreRequestCode] = useState(currentRequest.preRequestScript || '')
   const [testCode, setTestCode] = useState(currentRequest.testScript || '')
+  const [isJavaServiceRunning, setIsJavaServiceRunning] = useState<boolean | null>(null)
 
   // Sync with store when request changes
   useEffect(() => {
     setPreRequestCode(currentRequest.preRequestScript || '')
     setTestCode(currentRequest.testScript || '')
   }, [currentRequest.id])
+
+  // Check if Java service is running
+  useEffect(() => {
+    const checkJavaService = async () => {
+      const running = await JavaScriptService.isRunning()
+      setIsJavaServiceRunning(running)
+    }
+
+    checkJavaService()
+    // Check again every 10 seconds
+    const interval = setInterval(checkJavaService, 10000)
+
+    return () => clearInterval(interval)
+  }, [])
 
   const handlePreRequestChange = (value: string | undefined) => {
     const code = value || ''
@@ -88,6 +104,36 @@ console.log("Response size:", response.get("responseSize"), "bytes");
 
   return (
     <div className="h-full flex flex-col">
+      {/* Java Service Warning Banner */}
+      {isJavaServiceRunning === false && (
+        <div className="bg-yellow-500/10 border-b border-yellow-500/30 p-3">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="font-semibold text-yellow-500 text-sm">
+                Java Script Service Not Running
+              </h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                The Java sidecar service is not available. Scripts will not execute.
+                Please ensure the Java service is running on localhost:9090.
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Requests will continue to work, but pre-request and test scripts will be skipped.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isJavaServiceRunning === true && (
+        <div className="bg-green-500/10 border-b border-green-500/30 p-2">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <span className="text-xs text-green-500">Java Script Service Connected</span>
+          </div>
+        </div>
+      )}
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
         <div className="border-b border-border px-4">
           <TabsList>

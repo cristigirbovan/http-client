@@ -13,6 +13,7 @@ import KeyValueEditor from './KeyValueEditor'
 import BodyEditor from './BodyEditor'
 import AuthEditor from './AuthEditor'
 import CodeGeneratorModal from './CodeGeneratorModal'
+import SaveRequestModal from './SaveRequestModal'
 import ScriptsTab from './ScriptsTab'
 import RequestSettingsPanel from './RequestSettingsPanel'
 
@@ -29,6 +30,7 @@ export default function RequestPanel() {
 
   const [activeTab, setActiveTab] = useState('params')
   const [showCodeGenerator, setShowCodeGenerator] = useState(false)
+  const [showSaveModal, setShowSaveModal] = useState(false)
 
   const handleSend = async () => {
     if (!currentRequest.url) {
@@ -52,8 +54,7 @@ export default function RequestPanel() {
   }
 
   const handleSave = () => {
-    // TODO: Implement save to collection
-    alert('Save to collection - coming soon!')
+    setShowSaveModal(true)
   }
 
   return (
@@ -170,6 +171,13 @@ export default function RequestPanel() {
       <CodeGeneratorModal
         isOpen={showCodeGenerator}
         onClose={() => setShowCodeGenerator(false)}
+      />
+
+      {/* Save Request Modal */}
+      <SaveRequestModal
+        isOpen={showSaveModal}
+        onClose={() => setShowSaveModal(false)}
+        request={currentRequest}
       />
     </div>
   )

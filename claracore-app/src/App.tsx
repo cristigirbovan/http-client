@@ -10,6 +10,8 @@ import GlobalSearchModal from './components/GlobalSearchModal'
 import KeyboardShortcutsModal from './components/KeyboardShortcutsModal'
 import { KeyboardShortcutManager, defaultShortcuts } from './lib/keyboard-shortcuts'
 import { useCollectionStore } from './store/collection-store'
+import { useRequestStore } from './store/request-store'
+import { Folder } from './types'
 
 function App() {
   const [sidebarWidth, setSidebarWidth] = useState(280)
@@ -24,6 +26,7 @@ function App() {
 
   const collections = useCollectionStore((state) => state.collections)
   const getCollection = useCollectionStore((state) => state.getCollection)
+  const loadRequest = useRequestStore((state) => state.loadRequest)
 
   // Initialize keyboard shortcuts
   useEffect(() => {
@@ -58,9 +61,36 @@ function App() {
 
   // Handle request selection from global search
   const handleSelectRequest = (requestId: string, collectionId?: string) => {
-    // This will be handled by RequestPanel - we'll need to add a way to pass this
-    console.log('Selected request:', requestId, 'from collection:', collectionId)
-    // TODO: Implement request selection in RequestPanel
+    if (!collectionId) return
+
+    const collection = getCollection(collectionId)
+    if (!collection) return
+
+    // Search in root-level requests
+    const rootRequest = collection.requests.find(r => r.id === requestId)
+    if (rootRequest) {
+      loadRequest(rootRequest)
+      setIsSearchOpen(false)
+      return
+    }
+
+    // Search in folders recursively
+    const findRequestInFolders = (folders: Folder[]): boolean => {
+      for (const folder of folders) {
+        const request = folder.requests.find(r => r.id === requestId)
+        if (request) {
+          loadRequest(request)
+          setIsSearchOpen(false)
+          return true
+        }
+        if (findRequestInFolders(folder.folders)) {
+          return true
+        }
+      }
+      return false
+    }
+
+    findRequestInFolders(collection.folders)
   }
 
   // Open collection runner for specific collection
