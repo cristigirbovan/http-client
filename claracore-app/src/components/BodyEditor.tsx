@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Select } from './ui/select'
 import { useRequestStore } from '../store/request-store'
+import { BodyType } from '../types'
 import Editor from '@monaco-editor/react'
 
 export default function BodyEditor() {
@@ -11,11 +12,11 @@ export default function BodyEditor() {
   const bodyContent = currentRequest.body?.content || ''
 
   const handleBodyTypeChange = (type: string) => {
-    setBody(type as any, bodyContent)
+    setBody(type as BodyType, bodyContent)
   }
 
   const handleBodyContentChange = (value: string | undefined) => {
-    setBody(bodyType as any, value || '')
+    setBody(bodyType, value || '')
   }
 
   const getLanguage = () => {

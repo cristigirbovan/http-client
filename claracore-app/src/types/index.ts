@@ -2,6 +2,8 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 
 
 export type AuthType = 'none' | 'bearer' | 'basic' | 'api-key' | 'oauth2'
 
+export type BodyType = 'none' | 'json' | 'xml' | 'form-data' | 'x-www-form-urlencoded' | 'raw' | 'binary'
+
 export interface KeyValue {
   id: string
   key: string
@@ -38,7 +40,7 @@ export interface Request {
   headers: KeyValue[]
   params: KeyValue[]
   body?: {
-    type: 'none' | 'json' | 'xml' | 'form-data' | 'x-www-form-urlencoded' | 'raw' | 'binary'
+    type: BodyType
     content: string
     formData?: KeyValue[]
   }

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid'
-import { Request, Response, HttpMethod, KeyValue, AuthConfig } from '../types'
+import { Request, Response, HttpMethod, KeyValue, AuthConfig, BodyType } from '../types'
 
 interface RequestState {
   currentRequest: Request
@@ -17,7 +17,7 @@ interface RequestState {
   addParam: () => void
   updateParam: (id: string, key: string, value: string, enabled: boolean) => void
   removeParam: (id: string) => void
-  setBody: (type: Request['body']['type'], content: string) => void
+  setBody: (type: BodyType, content: string) => void
   setAuth: (auth: AuthConfig) => void
   setResponse: (response: Response | null) => void
   setLoading: (loading: boolean) => void
