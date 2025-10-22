@@ -14,6 +14,7 @@ import BodyEditor from './BodyEditor'
 import AuthEditor from './AuthEditor'
 import CodeGeneratorModal from './CodeGeneratorModal'
 import ScriptsTab from './ScriptsTab'
+import RequestSettingsPanel from './RequestSettingsPanel'
 
 export default function RequestPanel() {
   const currentRequest = useRequestStore((state) => state.currentRequest)
@@ -134,6 +135,7 @@ export default function RequestPanel() {
             <TabsTrigger value="headers">Headers</TabsTrigger>
             <TabsTrigger value="body">Body</TabsTrigger>
             <TabsTrigger value="scripts">Scripts</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
         </div>
 
@@ -156,6 +158,10 @@ export default function RequestPanel() {
 
           <TabsContent value="scripts" className="h-full">
             <ScriptsTab />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <RequestSettingsPanel />
           </TabsContent>
         </div>
       </Tabs>

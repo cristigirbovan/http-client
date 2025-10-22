@@ -1,28 +1,100 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
+import MenuBar from './components/MenuBar'
 import RequestPanel from './components/RequestPanel'
 import ResponsePanel from './components/ResponsePanel'
 import { ResizablePanel } from './components/ResizablePanel'
+import CollectionRunnerModal from './components/CollectionRunnerModal'
+import ImportExportModal from './components/ImportExportModal'
+import GlobalSearchModal from './components/GlobalSearchModal'
+import KeyboardShortcutsModal from './components/KeyboardShortcutsModal'
+import { KeyboardShortcutManager, defaultShortcuts } from './lib/keyboard-shortcuts'
+import { useCollectionStore } from './store/collection-store'
 
 function App() {
   const [sidebarWidth, setSidebarWidth] = useState(280)
   const [responseHeight, setResponseHeight] = useState(50) // percentage
 
-  return (
-    <div className="flex h-screen bg-background text-foreground overflow-hidden">
-      {/* Sidebar */}
-      <ResizablePanel
-        defaultSize={sidebarWidth}
-        minSize={200}
-        maxSize={500}
-        direction="horizontal"
-        onResize={setSidebarWidth}
-      >
-        <Sidebar />
-      </ResizablePanel>
+  // Modal visibility states
+  const [isRunnerOpen, setIsRunnerOpen] = useState(false)
+  const [isImportExportOpen, setIsImportExportOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false)
+  const [selectedCollectionForRunner, setSelectedCollectionForRunner] = useState<string | null>(null)
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+  const collections = useCollectionStore((state) => state.collections)
+  const getCollection = useCollectionStore((state) => state.getCollection)
+
+  // Initialize keyboard shortcuts
+  useEffect(() => {
+    const shortcutManager = KeyboardShortcutManager.getInstance()
+
+    // Global Search (Ctrl+K)
+    shortcutManager.register({
+      ...defaultShortcuts.GLOBAL_SEARCH,
+      action: () => setIsSearchOpen(true),
+    })
+
+    // Keyboard Shortcuts Help (Ctrl+/)
+    shortcutManager.register({
+      ...defaultShortcuts.SHOW_SHORTCUTS,
+      action: () => setIsShortcutsOpen(true),
+    })
+
+    // Import/Export (Ctrl+Shift+I)
+    shortcutManager.register({
+      key: 'i',
+      ctrl: true,
+      shift: true,
+      description: 'Import/Export',
+      category: 'Collections',
+      action: () => setIsImportExportOpen(true),
+    })
+
+    return () => {
+      shortcutManager.unregisterAll()
+    }
+  }, [])
+
+  // Handle request selection from global search
+  const handleSelectRequest = (requestId: string, collectionId?: string) => {
+    // This will be handled by RequestPanel - we'll need to add a way to pass this
+    console.log('Selected request:', requestId, 'from collection:', collectionId)
+    // TODO: Implement request selection in RequestPanel
+  }
+
+  // Open collection runner for specific collection
+  const openCollectionRunner = (collectionId: string) => {
+    setSelectedCollectionForRunner(collectionId)
+    setIsRunnerOpen(true)
+  }
+
+  return (
+    <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
+      {/* Menu Bar */}
+      <MenuBar
+        onOpenImportExport={() => setIsImportExportOpen(true)}
+        onOpenGlobalSearch={() => setIsSearchOpen(true)}
+        onOpenCollectionRunner={() => setIsRunnerOpen(true)}
+        onOpenShortcuts={() => setIsShortcutsOpen(true)}
+        onOpenSettings={() => console.log('Settings not implemented yet')}
+      />
+
+      {/* Main Layout */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar */}
+        <ResizablePanel
+          defaultSize={sidebarWidth}
+          minSize={200}
+          maxSize={500}
+          direction="horizontal"
+          onResize={setSidebarWidth}
+        >
+          <Sidebar />
+        </ResizablePanel>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
         {/* Request Panel */}
         <div
           className="overflow-hidden"
@@ -63,7 +135,34 @@ function App() {
         >
           <ResponsePanel />
         </div>
+        </div>
       </div>
+
+      {/* Global Modals */}
+      <CollectionRunnerModal
+        collection={selectedCollectionForRunner ? getCollection(selectedCollectionForRunner) : undefined}
+        isOpen={isRunnerOpen}
+        onClose={() => {
+          setIsRunnerOpen(false)
+          setSelectedCollectionForRunner(null)
+        }}
+      />
+
+      <ImportExportModal
+        isOpen={isImportExportOpen}
+        onClose={() => setIsImportExportOpen(false)}
+      />
+
+      <GlobalSearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        onSelectRequest={handleSelectRequest}
+      />
+
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsOpen}
+        onClose={() => setIsShortcutsOpen(false)}
+      />
     </div>
   )
 }

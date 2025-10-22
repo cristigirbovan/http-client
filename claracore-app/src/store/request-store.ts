@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { v4 as uuidv4 } from 'uuid'
-import { Request, Response, HttpMethod, KeyValue, AuthConfig, BodyType } from '../types'
+import { Request, Response, HttpMethod, KeyValue, AuthConfig, BodyType, RequestSettings } from '../types'
 
 interface RequestState {
   currentRequest: Request
@@ -21,6 +21,7 @@ interface RequestState {
   setAuth: (auth: AuthConfig) => void
   setPreRequestScript: (script: string) => void
   setTestScript: (script: string) => void
+  updateSettings: (settings: Partial<RequestSettings>) => void
   setResponse: (response: Response | null) => void
   setLoading: (loading: boolean) => void
   resetRequest: () => void
@@ -175,6 +176,18 @@ export const useRequestStore = create<RequestState>()(
           currentRequest: {
             ...state.currentRequest,
             testScript: script,
+            updatedAt: Date.now(),
+          },
+        })),
+
+      updateSettings: (settings) =>
+        set((state) => ({
+          currentRequest: {
+            ...state.currentRequest,
+            settings: {
+              ...state.currentRequest.settings,
+              ...settings,
+            },
             updatedAt: Date.now(),
           },
         })),
