@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Select } from './ui/select'
-import { X, FolderOpen } from 'lucide-react'
+import { X, FolderOpen, AlertCircle } from 'lucide-react'
 import { useCollectionStore } from '../store/collection-store'
 import { Request, Folder } from '../types'
+import { validateRequestName } from '../lib/validation'
 
 interface SaveRequestModalProps {
   isOpen: boolean
@@ -21,6 +22,7 @@ export default function SaveRequestModal({ isOpen, onClose, request }: SaveReque
   const [selectedFolderId, setSelectedFolderId] = useState<string>('')
   const [requestName, setRequestName] = useState(request.name || 'New Request')
   const [isUpdate, setIsUpdate] = useState(false)
+  const [nameError, setNameError] = useState<string | null>(null)
 
   useEffect(() => {
     if (isOpen && collections.length > 0) {
@@ -68,14 +70,23 @@ export default function SaveRequestModal({ isOpen, onClose, request }: SaveReque
     return folders
   }
 
+  const handleNameChange = (value: string) => {
+    setRequestName(value)
+    // Clear error on change
+    if (nameError) setNameError(null)
+  }
+
   const handleSave = () => {
+    // Validate collection selection
     if (!selectedCollectionId) {
-      alert('Please select a collection')
+      setNameError('Please select a collection')
       return
     }
 
-    if (!requestName.trim()) {
-      alert('Please enter a request name')
+    // Validate request name
+    const validation = validateRequestName(requestName)
+    if (!validation.valid) {
+      setNameError(validation.error || 'Invalid request name')
       return
     }
 
@@ -128,10 +139,17 @@ export default function SaveRequestModal({ isOpen, onClose, request }: SaveReque
                 <label className="text-sm font-medium">Request Name</label>
                 <Input
                   value={requestName}
-                  onChange={(e) => setRequestName(e.target.value)}
+                  onChange={(e) => handleNameChange(e.target.value)}
                   placeholder="Enter request name"
                   autoFocus
+                  className={nameError ? 'border-red-500' : ''}
                 />
+                {nameError && (
+                  <div className="flex items-center gap-1 text-xs text-red-500">
+                    <AlertCircle className="h-3 w-3" />
+                    <span>{nameError}</span>
+                  </div>
+                )}
               </div>
 
               {/* Collection Selection */}

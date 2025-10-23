@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Select } from './ui/select'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs'
-import { Send, Save, Loader2, Code } from 'lucide-react'
+import { Send, Save, Loader2, Code, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { useRequestStore } from '../store/request-store'
 import { useHistoryStore } from '../store/history-store'
 import { useEnvironmentStore } from '../store/environment-store'
@@ -16,6 +16,7 @@ import CodeGeneratorModal from './CodeGeneratorModal'
 import SaveRequestModal from './SaveRequestModal'
 import ScriptsTab from './ScriptsTab'
 import RequestSettingsPanel from './RequestSettingsPanel'
+import { validateUrl } from '../lib/validation'
 
 export default function RequestPanel() {
   const currentRequest = useRequestStore((state) => state.currentRequest)
@@ -31,10 +32,28 @@ export default function RequestPanel() {
   const [activeTab, setActiveTab] = useState('params')
   const [showCodeGenerator, setShowCodeGenerator] = useState(false)
   const [showSaveModal, setShowSaveModal] = useState(false)
+  const [urlValidation, setUrlValidation] = useState<{ valid: boolean; error?: string } | null>(null)
+
+  // Validate URL when it changes
+  useEffect(() => {
+    if (currentRequest.url) {
+      const validation = validateUrl(currentRequest.url)
+      setUrlValidation(validation)
+    } else {
+      setUrlValidation(null)
+    }
+  }, [currentRequest.url])
 
   const handleSend = async () => {
     if (!currentRequest.url) {
-      alert('Please enter a URL')
+      setUrlValidation({ valid: false, error: 'Please enter a URL' })
+      return
+    }
+
+    // Validate URL before sending
+    const validation = validateUrl(currentRequest.url)
+    if (!validation.valid) {
+      setUrlValidation(validation)
       return
     }
 
@@ -70,60 +89,87 @@ export default function RequestPanel() {
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <Select
-            value={currentRequest.method}
-            onChange={(e) => setMethod(e.target.value as HttpMethod)}
-            className="w-32"
-          >
-            <option value="GET">GET</option>
-            <option value="POST">POST</option>
-            <option value="PUT">PUT</option>
-            <option value="PATCH">PATCH</option>
-            <option value="DELETE">DELETE</option>
-            <option value="HEAD">HEAD</option>
-            <option value="OPTIONS">OPTIONS</option>
-          </Select>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Select
+              value={currentRequest.method}
+              onChange={(e) => setMethod(e.target.value as HttpMethod)}
+              className="w-32"
+            >
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+              <option value="PUT">PUT</option>
+              <option value="PATCH">PATCH</option>
+              <option value="DELETE">DELETE</option>
+              <option value="HEAD">HEAD</option>
+              <option value="OPTIONS">OPTIONS</option>
+            </Select>
 
-          <Input
-            placeholder="Enter request URL"
-            value={currentRequest.url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="flex-1"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !isLoading) {
-                handleSend()
-              }
-            }}
-          />
+            <div className="flex-1 relative">
+              <Input
+                placeholder="Enter request URL (e.g., https://api.example.com/users)"
+                value={currentRequest.url}
+                onChange={(e) => setUrl(e.target.value)}
+                className={`pr-10 ${
+                  urlValidation && !urlValidation.valid
+                    ? 'border-red-500'
+                    : urlValidation && urlValidation.valid
+                    ? 'border-green-500'
+                    : ''
+                }`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !isLoading) {
+                    handleSend()
+                  }
+                }}
+              />
+              {urlValidation && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {urlValidation.valid ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-red-500" />
+                  )}
+                </div>
+              )}
+            </div>
 
-          <Button
-            onClick={handleSend}
-            disabled={isLoading || !currentRequest.url}
-            className="min-w-24"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Sending
-              </>
-            ) : (
-              <>
-                <Send className="h-4 w-4 mr-2" />
-                Send
-              </>
-            )}
-          </Button>
+            <Button
+              onClick={handleSend}
+              disabled={isLoading || !currentRequest.url}
+              className="min-w-24"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Sending
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2" />
+                  Send
+                </>
+              )}
+            </Button>
 
-          <Button onClick={handleSave} variant="outline">
-            <Save className="h-4 w-4 mr-2" />
-            Save
-          </Button>
+            <Button onClick={handleSave} variant="outline">
+              <Save className="h-4 w-4 mr-2" />
+              Save
+            </Button>
 
-          <Button onClick={() => setShowCodeGenerator(true)} variant="outline">
-            <Code className="h-4 w-4 mr-2" />
-            Code
-          </Button>
+            <Button onClick={() => setShowCodeGenerator(true)} variant="outline">
+              <Code className="h-4 w-4 mr-2" />
+              Code
+            </Button>
+          </div>
+
+          {/* URL Validation Error */}
+          {urlValidation && !urlValidation.valid && urlValidation.error && (
+            <div className="flex items-center gap-1 text-xs text-red-500 ml-[140px]">
+              <AlertCircle className="h-3 w-3" />
+              <span>{urlValidation.error}</span>
+            </div>
+          )}
         </div>
       </div>
 
